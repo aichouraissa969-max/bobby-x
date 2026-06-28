@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 BOBBY X - منصة الألعاب</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- شاشة الدخول -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-logo">🎮 BOBBY X</div>
+            <div class="login-subtitle">منصة الألعاب والدردشة</div>
+            
+            <div class="login-form">
+                <div class="avatar-selector">
+                    <div class="avatar-option" data-avatar="🦊">🦊</div>
+                    <div class="avatar-option" data-avatar="🐱">🐱</div>
+                    <div class="avatar-option" data-avatar="🐲">🐲</div>
+                    <div class="avatar-option" data-avatar="🦅">🦅</div>
+                    <div class="avatar-option" data-avatar="🐺">🐺</div>
+                    <div class="avatar-option" data-avatar="🦁">🦁</div>
+                    <div class="avatar-option" data-avatar="🐉">🐉</div>
+                    <div class="avatar-option" data-avatar="⚡">⚡</div>
+                </div>
+                
+                <input type="text" id="usernameInput" placeholder="اسم المستخدم" class="login-input">
+                <button onclick="login()" class="login-btn">🚀 دخول</button>
+                <div id="loginError" class="login-error"></div>
+            </div>
+            
+            <div class="login-info">
+                <span>🔒 آمن ومجاني</span>
+                <span>👥 +1000 لاعب نشط</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div id="app" class="app" style="display:none">
+        <!-- الشريط الجانبي -->
+        <aside class="sidebar">
+            <div class="logo">🎮 BOBBY X</div>
+
+            <!-- بروفايل مصغر -->
+            <div class="profile-mini" onclick="showTab('profile')">
+                <div class="avatar-big" id="userAvatar">🦊</div>
+                <div class="profile-info">
+                    <h3 id="userName">المستخدم</h3>
+                    <span class="status-dot online">🟢 متصل</span>
+                    <span class="level-badge" id="userLevel">Lv.1</span>
+                </div>
+            </div>
+
+            <!-- قائمة الألعاب -->
+            <div class="games-section">
+                <h4>🖥️ ألعاب الكمبيوتر</h4>
+                <div class="game-item active" data-game="cs2" onclick="selectGame('cs2')">
+                    <span class="game-icon">💀</span>
+                    <span class="game-name">كونتر سترايك 2</span>
+                    <span class="game-online">● <span id="online_cs2">0</span></span>
+                </div>
+                <div class="game-item" data-game="pubg" onclick="selectGame('pubg')">
+                    <span class="game-icon">🪂</span>
+                    <span class="game-name">ببجي</span>
+                    <span class="game-online">● <span id="online_pubg">0</span></span>
+                </div>
+                <div class="game-item" data-game="valorant" onclick="selectGame('valorant')">
+                    <span class="game-icon">⚡</span>
+                    <span class="game-name">فالورانت</span>
+                    <span class="game-online">● <span id="online_valorant">0</span></span>
+                </div>
+
+                <h4>📱 ألعاب الهاتف</h4>
+                <div class="game-item" data-game="freefire" onclick="selectGame('freefire')">
+                    <span class="game-icon">🔥</span>
+                    <span class="game-name">فري فاير</span>
+                    <span class="game-online">● <span id="online_freefire">0</span></span>
+                </div>
+                <div class="game-item" data-game="cod_mobile" onclick="selectGame('cod_mobile')">
+                    <span class="game-icon">💣</span>
+                    <span class="game-name">كول أوف ديوتي موبايل</span>
+                    <span class="game-online">● <span id="online_cod_mobile">0</span></span>
+                </div>
+                <div class="game-item" data-game="mlbb" onclick="selectGame('mlbb')">
+                    <span class="game-icon">⚔️</span>
+                    <span class="game-name">موبايل ليجندز</span>
+                    <span class="game-online">● <span id="online_mlbb">0</span></span>
+                </div>
+
+                <h4>🌐 ألعاب المتصفح</h4>
+                <div class="game-item" data-game="krunker" onclick="selectGame('krunker')">
+                    <span class="game-icon">🎮</span>
+                    <span class="game-name">كرانكر</span>
+                    <span class="game-online">● <span id="online_krunker">0</span></span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="logout-btn">🚪 خروج</button>
+            </div>
+        </aside>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content">
+            <!-- التبويبات -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="chat" onclick="showTab('chat')">💬 دردشة المجموعة</button>
+                <button class="tab-btn" data-tab="random" onclick="showTab('random')">🔀 عشوائي</button>
+                <button class="tab-btn" data-tab="competitions" onclick="showTab('competitions')">🏆 المسابقات</button>
+                <button class="tab-btn" data-tab="profile" onclick="showTab('profile')">👤 بروفايل</button>
+                <button class="tab-btn" data-tab="matchmaking" onclick="showTab('matchmaking')">🎯 بحث عن مباراة</button>
+            </div>
+
+            <!-- تبويب الدردشة -->
+            <div class="tab-content" id="tab-chat">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <span id="currentGroupName">💀 كونتر سترايك 2</span>
+                        <span class="chat-members" id="groupMembersCount">0 أعضاء</span>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="اكتب رسالتك...">
+                        <button onclick="sendMessage()">📤 إرسال</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب الدردشة العشوائية -->
+            <div class="tab-content" id="tab-random" style="display:none">
+                <div class="random-chat-area">
+                    <div class="random-header">
+                        <div class="partner-info" id="partnerInfo">
+                            <span class="partner-avatar">🔍</span>
+                            <div>
+                                <div style="font-weight:bold" id="partnerName">جاري البحث...</div>
+                                <div style="font-size:12px;color:#8a8a8a" id="partnerStatus">اختر لعبة وابحث</div>
+                            </div>
+                        </div>
+                        <div class="random-controls">
+                            <select id="randomGameFilter" class="game-filter">
+                                <option value="all">🎮 جميع الألعاب</option>
+                                <option value="cs2">💀 كونتر سترايك 2</option>
+                                <option value="pubg">🪂 ببجي</option>
+                                <option value="freefire">🔥 فري فاير</option>
+                                <option value="valorant">⚡ فالورانت</option>
+                                <option value="cod_mobile">💣 كول أوف ديوتي</option>
+                                <option value="mlbb">⚔️ موبايل ليجندز</option>
+                            </select>
+                            <button onclick="findRandomChat()" class="find-btn">🔍 بحث</button>
+                            <button onclick="skipPartner()" class="skip-btn">⏭️ تخطي</button>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="randomMessages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="randomInput" placeholder="اكتب رسالتك...">
+                        <button onclick="sendRandomMessage()">📤 إرسال</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب المسابقات -->
+            <div class="tab-content" id="tab-competitions" style="display:none">
+                <div class="competitions-container">
+                    <div class="competitions-header">
+                        <h2>🏆 المسابقات</h2>
+                        <button onclick="showCreateCompetition()" class="create-comp-btn">➕ إنشاء مسابقة</button>
+                    </div>
+                    <div class="competitions-grid" id="competitionsGrid">
+                        <!-- ستظهر المسابقات هنا -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب البروفايل -->
+            <div class="tab-content" id="tab-profile" style="display:none">
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-avatar" id="profileAvatar">🦊</div>
+                        <h2 id="profileName">المستخدم</h2>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-value" id="profileLevel">1</span>
+                                <span class="stat-label">المستوى</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="profilePoints">0</span>
+                                <span class="stat-label">النقاط</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="profileGames">0</span>
+                                <span class="stat-label">مباريات</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-game-stats">
+                        <h3>📊 إحصائيات الألعاب</h3>
+                        <div id="gameStatsContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب البحث عن مباراة -->
+            <div class="tab-content" id="tab-matchmaking" style="display:none">
+                <div class="matchmaking-container">
+                    <h2>🎯 البحث عن مباراة</h2>
+                    <div class="matchmaking-controls">
+                        <select id="matchGameSelect" class="game-filter">
+                            <option value="cs2">💀 كونتر سترايك 2</option>
+                            <option value="pubg">🪂 ببجي</option>
+                            <option value="freefire">🔥 فري فاير</option>
+                            <option value="valorant">⚡ فالورانت</option>
+                            <option value="cod_mobile">💣 كول أوف ديوتي</option>
+                            <option value="mlbb">⚔️ موبايل ليجندز</option>
+                        </select>
+                        <button onclick="findMatch()" class="find-match-btn">🎯 بحث</button>
+                    </div>
+                    <div id="matchStatus" class="match-status">
+                        <p>🔍 اضغط بحث للبدء</p>
+                    </div>
+                    <div id="matchPlayers" class="match-players"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // ========================================
+        //  متغيرات عامة
+        // ========================================
+        const socket = io();
+        let currentUser = null;
+        let currentGame = 'cs2';
+        let selectedAvatar = '🦊';
+        let randomPartner = null;
+        let currentGroupId = null;
+
+        // ========================================
+        //  تسجيل الدخول
+        // ========================================
+        function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            
+            if (!username || username.length < 3) {
+                document.getElementById('loginError').textContent = '⚠️ اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
+                return;
+            }
+            
+            // تسجيل مستخدم جديد
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, avatar: selectedAvatar })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    // محاولة تسجيل الدخول بدلاً من التسجيل
+                    fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    })
+                    .then(res => res.json())
+                    .then(loginData => {
+                        if (loginData.error) {
+                            document.getElementById('loginError').textContent = '❌ ' + loginData.error;
+                        } else {
+                            startApp(loginData.user);
+                        }
+                    });
+                } else {
+                    startApp(data.user);
+                }
+            })
+            .catch(err => {
+                document.getElementById('loginError').textContent = '❌ خطأ في الاتصال بالسيرفر';
+                console.error(err);
+            });
+        }
+
+        function startApp(user) {
+            currentUser = user;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('app').style.display = 'flex';
+            
+            // تحديث الواجهة
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('userAvatar').textContent = user.avatar;
+            document.getElementById('userLevel').textContent = 'Lv.' + user.level;
+            document.getElementById('profileAvatar').textContent = user.avatar;
+            document.getElementById('profileName').textContent = user.username;
+            document.getElementById('profileLevel').textContent = user.level;
+            document.getElementById('profilePoints').textContent = user.totalPoints;
+            
+            // حساب إجمالي المباريات
+            let totalGames = 0;
+            Object.values(user.gameStats || {}).forEach(stat => {
+                totalGames += stat.gamesPlayed || 0;
+            });
+            document.getElementById('profileGames').textContent = totalGames;
+            
+            // تحديث إحصائيات الألعاب
+            updateGameStats();
+            
+            // اتصال Socket
+            socket.emit('register', user.id);
+            
+            // تحميل المجموعات والمسابقات
+            loadGroups();
+            loadCompetitions();
+            
+            // الانضمام إلى مجموعة اللعبة الافتراضية
+            joinGameGroup('cs2');
+        }
+
+        // ========================================
+        //  اختيار الأفاتار
+        // ========================================
+        document.querySelectorAll('.avatar-option').forEach(el => {
+            el.addEventListener('click', function() {
+                document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedAvatar = this.textContent;
+            });
+        });
+
+        // الضغط على Enter في حقل اسم المستخدم
+        document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+
+        // ========================================
+        //  التبويبات
+        // ========================================
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`tab-${tabName}`).style.display = 'flex';
+            
+            if (tabName === 'profile') {
+                updateProfile();
+            }
+        }
+
+        // ========================================
+        //  اختيار اللعبة
+        // ========================================
+        function selectGame(gameId) {
+            currentGame = gameId;
+            document.querySelectorAll('.game-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-game="${gameId}"]`).classList.add('active');
+            
+            joinGameGroup(gameId);
+            showTab('chat');
+        }
+
+        function joinGameGroup(gameId) {
+            // البحث عن مجموعة اللعبة أو إنشاؤها
+            fetch('/api/groups')
+                .then(res => res.json())
+                .then(groups => {
+                    let group = groups.find(g => g.gameId === gameId);
+                    
+                    if (!group) {
+                        // إنشاء مجموعة جديدة
+                        const game = getGameInfo(gameId);
+                        fetch('/api/groups', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: `🎮 ${game.name}`,
+                                gameId: gameId,
+                                creatorId: currentUser.id
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                joinGroup(data.group.id);
+                            }
+                        });
+                    } else {
+                        joinGroup(group.id);
+                    }
+                });
+        }
+
+        function joinGroup(groupId) {
+            currentGroupId = groupId;
+            
+            // الانضمام عبر Socket
+            socket.emit('join_group', groupId);
+            
+            // تحديث العنوان
+            fetch(`/api/groups/${groupId}`)
+                .then(res => res.json())
+                .then(group => {
+                    document.getElementById('currentGroupName').textContent = `${group.gameIcon} ${group.gameName}`;
+                    document.getElementById('groupMembersCount').textContent = group.members.length + ' أعضاء';
+                });
+        }
+
+        // ========================================
+        //  الرسائل
+        // ========================================
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentGroupId) return;
+            
+            socket.emit('group_message', {
+                groupId: currentGroupId,
+                message: text
+            });
+            
+            input.value = '';
+        }
+
+        function addMessage(text, type, username = null, avatar = null, time = null) {
+            const container = document.getElementById('chatMessages');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            
+            if (type === 'received' && username) {
+                const userSpan = document.createElement('span');
+                userSpan.className = 'msg-user';
+                userSpan.textContent = (avatar || '👤') + ' ' + username;
+                msg.appendChild(userSpan);
+            }
+            
+            const textNode = document.createTextNode(text);
+            msg.appendChild(textNode);
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'msg-time';
+            timeSpan.textContent = time || new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'});
+            msg.appendChild(timeSpan);
+            
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // الضغط على Enter في حقل الرسائل
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        document.getElementById('randomInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendRandomMessage();
+        });
+
+        // ========================================
+        //  الدردشة العشوائية
+        // ========================================
+        function findRandomChat() {
+            const filter = document.getElementById('randomGameFilter').value;
+            socket.emit('find_random_chat', filter);
+            
+            document.getElementById('partnerName').textContent = '🔍 جاري البحث...';
+            document.getElementById('partnerStatus').textContent = 'يرجى الانتظار';
+        }
+
+        function sendRandomMessage() {
+            const input = document.getElementById('randomInput');
+            const text = input.value.trim();
+            if (!text || !randomPartner) return;
+            
+            socket.emit('random_message', { text });
+            
+            // عرض الرسالة محلياً
+            const container = document.getElementById('randomMessages');
+            const msg = document.createElement('div');
+            msg.className = 'message sent';
+            msg.textContent = text;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            
+            input.value = '';
+        }
+
+        function skipPartner() {
+            socket.emit('skip_random_chat');
+            randomPartner = null;
+            document.getElementById('partnerName').textContent = '⏭️ تم التخطي';
+            document.getElementById('partnerStatus').textContent = 'ابحث عن شريك جديد';
+        }
+
+        // ========================================
+        //  المسابقات
+        // ========================================
+        function loadCompetitions() {
+            fetch('/api/competitions')
+                .then(res => res.json())
+                .then(competitions => {
+                    const grid = document.getElementById('competitionsGrid');
+                    grid.innerHTML = '';
+                    
+                    if (competitions.length === 0) {
+                        grid.innerHTML = '<div class="empty-state">📭 لا توجد مسابقات حالياً</div>';
+                        return;
+                    }
+                    
+                    competitions.forEach(comp => {
+                        const card = document.createElement('div');
+                        card.className = 'competition-card';
+                        
+                        const statusClass = {
+                            'active': 'status-active',
+                            'upcoming': 'status-upcoming',
+                            'finished': 'status-finished'
+                        }[comp.status] || 'status-upcoming';
+                        
+                        const statusText = {
+                            'active': '● نشطة',
+                            'upcoming': '● قادمة',
+                            'finished': '● منتهية'
+                        }[comp.status] || '● قادمة';
+                        
+                        card.innerHTML = `
+                            <div class="comp-title">${comp.gameIcon} ${comp.name}</div>
+                            <div class="comp-game">🎮 ${comp.gameName}</div>
+                            <div class="comp-prize">💰 ${comp.prize}</div>
+                            <span class="comp-status ${statusClass}">${statusText}</span>
+                            <div class="comp-players">👥 ${comp.participants.length} مشترك</div>
+                            ${comp.status !== 'finished' ? 
+                                `<button onclick="joinCompetition('${comp.id}')" class="join-comp-btn">انضم</button>` : 
+                                `<div class="winner">🏆 الفائز: ${comp.winner || 'غير محدد'}</div>`
+                            }
+                        `;
+                        grid.appendChild(card);
+                    });
+                });
+        }
+
+        function joinCompetition(compId) {
+            fetch(`/api/competitions/${compId}/join`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser.id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ تم الانضمام إلى المسابقة بنجاح!');
+                    loadCompetitions();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            });
+        }
+
+        function showCreateCompetition() {
+            const game = prompt('اختر اللعبة (cs2, pubg, freefire, valorant, cod_mobile, mlbb):');
+            if (!game) return;
+            
+            const name = prompt('اسم المسابقة:');
+            if (!name) return;
+            
+            const prize = prompt('الجائزة:');
+            if (!prize) return;
+            
+            fetch('/api/competitions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    gameId: game,
+                    name: name,
+                    prize: prize,
+                    createdBy: currentUser.id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ تم إنشاء المسابقة بنجاح!');
+                    loadCompetitions();
+                }
+            });
+        }
+
+        // ========================================
+        //  البحث عن مباراة
+        // ========================================
+        function findMatch() {
+            const gameId = document.getElementById('matchGameSelect').value;
+            const statusDiv = document.getElementById('matchStatus');
+            const playersDiv = document.getElementById('matchPlayers');
+            
+            statusDiv.innerHTML = '<p>🔍 جاري البحث عن لاعبين...</p>';
+            playersDiv.innerHTML = '';
+            
+            fetch('/api/matchmaking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    gameId: gameId,
+                    userId: currentUser.id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const room = data.room;
+                    statusDiv.innerHTML = `
+                        <p>✅ تم العثور على غرفة!</p>
+                        <p>🎮 ${room.gameName}</p>
+                        <p>👥 ${room.players.length}/${room.maxPlayers} لاعب</p>
+                        <p>${room.status === 'starting' ? '🚀 المباراة ستبدأ قريباً!' : '⏳ انتظار لاعبين إضافيين...'}</p>
+                    `;
+                    
+                    playersDiv.innerHTML = room.players.map(id => {
+                        return `<div class="player-tag">👤 لاعب ${id}</div>`;
+                    }).join('');
+                } else {
+                    statusDiv.innerHTML = `<p>❌ ${data.error}</p>`;
+                }
+            });
+        }
+
+        // ========================================
+        //  البروفايل
+        // ========================================
+        function updateProfile() {
+            if (!currentUser) return;
+            
+            // تحديث معلومات المستخدم
+            fetch(`/api/users/${currentUser.id}`)
+                .then(res => res.json())
+                .then(user => {
+                    currentUser = user;
+                    
+                    document.getElementById('profileAvatar').textContent = user.avatar;
+                    document.getElementById('profileName').textContent = user.username;
+                    document.getElementById('profileLevel').textContent = user.level;
+                    document.getElementById('profilePoints').textContent = user.totalPoints;
+                    
+                    let totalGames = 0;
+                    Object.values(user.gameStats || {}).forEach(stat => {
+                        totalGames += stat.gamesPlayed || 0;
+                    });
+                    document.getElementById('profileGames').textContent = totalGames;
+                    
+                    updateGameStats();
+                });
+        }
+
+        function updateGameStats() {
+            const container = document.getElementById('gameStatsContainer');
+            if (!currentUser || !currentUser.gameStats) return;
+            
+            container.innerHTML = '';
+            Object.entries(currentUser.gameStats).forEach(([gameId, stats]) => {
+                const game = getGameInfo(gameId);
+                if (!game) return;
+                
+                const div = document.createElement('div');
+                div.className = 'game-stat-item';
+                div.innerHTML = `
+                    <span class="game-stat-icon">${game.icon}</span>
+                    <span class="game-stat-name">${game.name}</span>
+                    <span class="game-stat-detail">🎮 ${stats.gamesPlayed || 0}</span>
+                    <span class="game-stat-detail">🏆 ${stats.wins || 0}</span>
+                    <span class="game-stat-rank">${stats.rank || 'Unranked'}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ========================================
+        //  دوال مساعدة
+        // ========================================
+        function getGameInfo(gameId) {
+            const games = {
+                cs2: { id: 'cs2', name: 'كونتر سترايك 2', icon: '💀' },
+                pubg: { id: 'pubg', name: 'ببجي', icon: '🪂' },
+                valorant: { id: 'valorant', name: 'فالورانت', icon: '⚡' },
+                lol: { id: 'lol', name: 'ليج أوف ليجندز', icon: '⚔️' },
+                freefire: { id: 'freefire', name: 'فري فاير', icon: '🔥' },
+                cod_mobile: { id: 'cod_mobile', name: 'كول أوف ديوتي', icon: '💣' },
+                mlbb: { id: 'mlbb', name: 'موبايل ليجندز', icon: '⚔️' },
+                krunker: { id: 'krunker', name: 'كرانكر', icon: '🎮' }
+            };
+            return games[gameId] || { id: gameId, name: gameId, icon: '🎮' };
+        }
+
+        function logout() {
+            if (confirm('هل أنت متأكد من الخروج؟')) {
+                location.reload();
+            }
+        }
+
+        // ========================================
+        //  أحداث Socket
+        // ========================================
+        socket.on('connect', () => {
+            console.log('✅ متصل بالسيرفر');
+        });
+
+        socket.on('group_message', (data) => {
+            if (data.from === currentUser.id) return;
+            addMessage(data.text, 'received', data.username, data.avatar, data.time);
+        });
+
+        socket.on('group_messages', (messages) => {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                const type = msg.from === currentUser.id ? 'sent' : 'received';
+                addMessage(msg.text, type, msg.username, msg.avatar, msg.time);
+            });
+        });
+
+        socket.on('group_member_joined', (data) => {
+            addMessage(`👋 ${data.username} انضم إلى المجموعة`, 'received', 'النظام', '🤖');
+        });
+
+        socket.on('random_chat_status', (data) => {
+            if (data.status === 'connected') {
+                randomPartner = data.partner.id;
+                document.getElementById('partnerName').textContent = `${data.partner.avatar || '👤'} ${data.partner.username}`;
+                document.getElementById('partnerStatus').textContent = '🟢 متصل الآن';
+                addRandomMessage('🔗 تم الاتصال! يمكنك بدء المحادثة', 'received', 'النظام', '🤖');
+            } else if (data.status === 'waiting') {
+                document.getElementById('partnerName').textContent = '⏳ في الانتظار';
+                document.getElementById('partnerStatus').textContent = data.message;
+            } else if (data.status === 'skipped') {
+                randomPartner = null;
+                document.getElementById('partnerName').textContent = '⏭️ تم التخطي';
+                document.getElementById('partnerStatus').textContent = 'ابحث عن شريك جديد';
+                addRandomMessage('⏭️ تم تخطي الشريك', 'received', 'النظام', '🤖');
+            } else if (data.status === 'disconnected') {
+                randomPartner = null;
+                document.getElementById('partnerName').textContent = '🔴 غير متصل';
+                document.getElementById('partnerStatus').textContent = data.message;
+                addRandomMessage('🔴 غادر الشريك الدردشة', 'received', 'النظام', '🤖');
+            }
+        });
+
+        socket.on('random_message', (data) => {
+            addRandomMessage(data.text, 'received', data.username, data.avatar);
+        });
+
+        socket.on('users_online', (users) => {
+            // تحديث عدد اللاعبين المتصلين في كل لعبة
+            // يمكن تطويرها لاحقاً
+        });
+
+        function addRandomMessage(text, type, username = null, avatar = null) {
+            const container = document.getElementById('randomMessages');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            
+            if (type === 'received' && username) {
+                const userSpan = document.createElement('span');
+                userSpan.className = 'msg-user';
+                userSpan.textContent = (avatar || '👤') + ' ' + username;
+                msg.appendChild(userSpan);
+            }
+            
+            msg.appendChild(document.createTextNode(text));
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ========================================
+        //  تحميل المجموعات
+        // ========================================
+        function loadGroups() {
+            fetch('/api/groups')
+                .then(res => res.json())
+                .then(groups => {
+                    // يمكن عرض المجموعات في القائمة الجانبية
+                });
+        }
+
+        // ========================================
+        //  بدء التطبيق
+        // ========================================
+        console.log('🎮 BOBBY X - منصة الألعاب');
+    </script>
+</body>
+</html>

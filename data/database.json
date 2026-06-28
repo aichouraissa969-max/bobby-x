@@ -1,0 +1,200 @@
+{
+  "users": {
+    "user_1782655301548": {
+      "id": "user_1782655301548",
+      "username": "عيسى",
+      "avatar": "🦊",
+      "level": 1,
+      "totalPoints": 0,
+      "joinDate": "2026-06-28T14:01:41.548Z",
+      "status": "online",
+      "currentGame": null,
+      "interestedGames": [],
+      "friends": [],
+      "gameStats": {
+        "cs2": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "pubg": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "valorant": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "lol": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "freefire": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "cod_mobile": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "mlbb": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        },
+        "krunker": {
+          "gamesPlayed": 0,
+          "wins": 0,
+          "losses": 0,
+          "kills": 0,
+          "deaths": 0,
+          "rank": "Unranked",
+          "points": 0,
+          "hoursPlayed": 0,
+          "lastPlayed": null
+        }
+      },
+      "randomChatPreferences": {
+        "gameFilter": "all",
+        "language": "arabic"
+      },
+      "settings": {
+        "notifications": true,
+        "sound": true,
+        "darkMode": false
+      }
+    }
+  },
+  "chatGroups": {
+    "group_1782655301725": {
+      "id": "group_1782655301725",
+      "name": "🎮 كونتر سترايك 2",
+      "gameId": "cs2",
+      "gameName": "💀 كونتر سترايك 2",
+      "gameIcon": "💀",
+      "creator": "user_1782655301548",
+      "members": [
+        "user_1782655301548"
+      ],
+      "messages": [],
+      "createdAt": "2026-06-28T14:01:41.725Z",
+      "isPrivate": false,
+      "maxMembers": 50
+    },
+    "group_1782655341418": {
+      "id": "group_1782655341418",
+      "name": "🎮 ببجي",
+      "gameId": "pubg",
+      "gameName": "🪂 ببجي",
+      "gameIcon": "🪂",
+      "creator": "user_1782655301548",
+      "members": [
+        "user_1782655301548"
+      ],
+      "messages": [],
+      "createdAt": "2026-06-28T14:02:21.418Z",
+      "isPrivate": false,
+      "maxMembers": 50
+    },
+    "group_1782655341937": {
+      "id": "group_1782655341937",
+      "name": "🎮 فالورانت",
+      "gameId": "valorant",
+      "gameName": "⚡ فالورانت",
+      "gameIcon": "⚡",
+      "creator": "user_1782655301548",
+      "members": [
+        "user_1782655301548"
+      ],
+      "messages": [],
+      "createdAt": "2026-06-28T14:02:21.937Z",
+      "isPrivate": false,
+      "maxMembers": 50
+    },
+    "group_1782655342723": {
+      "id": "group_1782655342723",
+      "name": "🎮 فري فاير",
+      "gameId": "freefire",
+      "gameName": "🔥 فري فاير",
+      "gameIcon": "🔥",
+      "creator": "user_1782655301548",
+      "members": [
+        "user_1782655301548"
+      ],
+      "messages": [],
+      "createdAt": "2026-06-28T14:02:22.723Z",
+      "isPrivate": false,
+      "maxMembers": 50
+    }
+  },
+  "competitions": [
+    {
+      "id": "comp_1782655328837",
+      "gameId": "cs2",
+      "gameName": "💀 كونتر سترايك 2",
+      "gameIcon": "💀",
+      "name": "lokok",
+      "prize": "2000da",
+      "maxPlayers": 10,
+      "participants": [
+        "user_1782655301548"
+      ],
+      "startDate": "2026-06-28T14:02:08.837Z",
+      "endDate": null,
+      "status": "upcoming",
+      "winner": null,
+      "createdBy": "user_1782655301548",
+      "createdAt": "2026-06-28T14:02:08.837Z"
+    }
+  ],
+  "messages": [],
+  "gameRooms": {},
+  "onlineUsers": {}
+}
