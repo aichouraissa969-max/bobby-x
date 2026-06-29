@@ -1,0 +1,15 @@
+[
+  {
+    "userId": "user_1782687187029",
+    "username": "ihgd;l",
+    "ip": "::1",
+    "timestamp": "2026-06-28T22:53:07.046Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+    "platform": "\"Windows\"",
+    "location": null,
+    "coordinates": null,
+    "endpoint": "/api/register",
+    "method": "POST",
+    "hostname": "DESKTOP-R4SNIOA"
+  }
+]
