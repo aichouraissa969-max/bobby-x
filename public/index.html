@@ -1090,6 +1090,136 @@
             transform: scale(1.05);
         }
 
+        /* ===== الرتب والمهام ===== */
+        .rank-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            padding: 28px 30px;
+            text-align: center;
+            max-width: 550px;
+            margin: 0 auto 24px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .rank-display {
+            font-size: 80px;
+            margin-bottom: 8px;
+        }
+
+        .rank-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .rank-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .rank-progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .rank-points {
+            font-size: 14px;
+            color: #8a8a8a;
+        }
+
+        /* ===== المهام ===== */
+        .missions-container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .missions-container h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .mission-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .mission-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .mission-item.completed {
+            border-color: rgba(74, 222, 128, 0.3);
+            background: rgba(74, 222, 128, 0.05);
+        }
+
+        .mission-item .mission-icon {
+            font-size: 28px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .mission-item .mission-info {
+            flex: 1;
+        }
+
+        .mission-item .mission-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .mission-item .mission-desc {
+            font-size: 12px;
+            color: #8a8a8a;
+        }
+
+        .mission-item .mission-progress {
+            font-size: 12px;
+            color: #4ade80;
+            min-width: 60px;
+            text-align: left;
+        }
+
+        .mission-item .mission-status {
+            font-size: 20px;
+        }
+
+        .mission-item .mission-points {
+            font-size: 12px;
+            color: #ffd200;
+            min-width: 50px;
+            text-align: left;
+        }
+
+        .share-btn {
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #4ade80, #22d3ee);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+
         /* ===== Scrollbar ===== */
         ::-webkit-scrollbar {
             width: 4px;
@@ -1264,6 +1394,7 @@
                 <button class="tab-btn" data-tab="profile" onclick="showTab('profile')">👤 بروفايل</button>
                 <button class="tab-btn" data-tab="matchmaking" onclick="showTab('matchmaking')">🎯 بحث عن مباراة</button>
                 <button class="tab-btn" data-tab="friends" onclick="showTab('friends')">👥 الأصدقاء</button>
+                <button class="tab-btn" data-tab="missions" onclick="showTab('missions')">🎯 المهام والرتب</button>
             </div>
 
             <!-- ===== تبويب الدردشة ===== -->
@@ -1411,6 +1542,27 @@
                 </div>
             </div>
 
+            <!-- ===== تبويب المهام والرتب ===== -->
+            <div class="tab-content" id="tab-missions" style="display:none">
+                <div class="profile-container">
+                    <div class="rank-card" id="rankCard">
+                        <div class="rank-display" id="rankIcon">🌱</div>
+                        <div class="rank-name" id="rankName" style="color: #8a8a8a;">جديد</div>
+                        <div class="rank-progress">
+                            <div class="rank-progress-bar" id="rankProgress" style="width: 0%;"></div>
+                        </div>
+                        <div class="rank-points">
+                            <span id="currentPoints">0</span> / <span id="nextRankPoints">100</span> نقطة
+                        </div>
+                    </div>
+
+                    <div class="missions-container">
+                        <h3>🎯 المهام المتاحة</h3>
+                        <div id="missionsList"></div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1460,6 +1612,291 @@
                 document.title = `(${unreadCount}) 🎮 BOBBY X`;
             } else {
                 document.title = originalTitle;
+            }
+        }
+
+        // ========================================
+        //  نظام الرتب والمهام
+        // ========================================
+
+        const RANKS = [
+            { id: 0, name: 'جديد', icon: '🌱', minPoints: 0, color: '#8a8a8a' },
+            { id: 1, name: 'مبتدئ', icon: '🌟', minPoints: 100, color: '#4ade80' },
+            { id: 2, name: 'لاعب نشط', icon: '⚡', minPoints: 300, color: '#22d3ee' },
+            { id: 3, name: 'محترف', icon: '🎯', minPoints: 600, color: '#667eea' },
+            { id: 4, name: 'خبير', icon: '🏆', minPoints: 1000, color: '#fbbf24' },
+            { id: 5, name: 'أسطوري', icon: '👑', minPoints: 1500, color: '#f7971e' },
+            { id: 6, name: 'خرافي', icon: '🔥', minPoints: 2500, color: '#f87171' }
+        ];
+
+        const MISSIONS = [
+            {
+                id: 'mission_1',
+                name: '🎮 أول خطوة',
+                description: 'سجل دخولك إلى المنصة لأول مرة',
+                icon: '👋',
+                points: 25,
+                type: 'login',
+                target: 1,
+                category: 'عامة'
+            },
+            {
+                id: 'mission_2',
+                name: '💬 أول رسالة',
+                description: 'أرسل أول رسالة في الدردشة الجماعية',
+                icon: '💬',
+                points: 30,
+                type: 'message',
+                target: 1,
+                category: 'دردشة'
+            },
+            {
+                id: 'mission_3',
+                name: '👥 انضم إلى مجموعة',
+                description: 'انضم إلى مجموعة ألعاب جديدة',
+                icon: '👥',
+                points: 20,
+                type: 'join_group',
+                target: 1,
+                category: 'اجتماعي'
+            },
+            {
+                id: 'mission_4',
+                name: '🏆 أول مسابقة',
+                description: 'انضم إلى أول مسابقة في المنصة',
+                icon: '🏆',
+                points: 50,
+                type: 'join_competition',
+                target: 1,
+                category: 'مسابقات'
+            },
+            {
+                id: 'mission_5',
+                name: '📤 شارك المنصة',
+                description: 'شارك رابط المنصة مع 5 من أصدقائك',
+                icon: '📤',
+                points: 100,
+                type: 'share',
+                target: 5,
+                category: 'اجتماعي'
+            },
+            {
+                id: 'mission_6',
+                name: '🎯 10 رسائل',
+                description: 'أرسل 10 رسائل في الدردشة',
+                icon: '📝',
+                points: 40,
+                type: 'message',
+                target: 10,
+                category: 'دردشة'
+            },
+            {
+                id: 'mission_7',
+                name: '🔥 5 ألعاب مختلفة',
+                description: 'جرب الدردشة في 5 ألعاب مختلفة',
+                icon: '🎮',
+                points: 60,
+                type: 'games_played',
+                target: 5,
+                category: 'ألعاب'
+            },
+            {
+                id: 'mission_8',
+                name: '🤝 أضف 3 أصدقاء',
+                description: 'أضف 3 أصدقاء إلى قائمتك',
+                icon: '🤝',
+                points: 45,
+                type: 'friends',
+                target: 3,
+                category: 'اجتماعي'
+            },
+            {
+                id: 'mission_9',
+                name: '⭐ 3 مسابقات',
+                description: 'انضم إلى 3 مسابقات مختلفة',
+                icon: '⭐',
+                points: 75,
+                type: 'join_competition',
+                target: 3,
+                category: 'مسابقات'
+            },
+            {
+                id: 'mission_10',
+                name: '🚀 دعم المنصة',
+                description: 'شارك المنصة مع 10 أصدقاء',
+                icon: '🚀',
+                points: 150,
+                type: 'share',
+                target: 10,
+                category: 'اجتماعي'
+            }
+        ];
+
+        let userMissions = JSON.parse(localStorage.getItem('userMissions')) || {};
+        let userStats = JSON.parse(localStorage.getItem('userStats')) || {
+            messages: 0,
+            gamesPlayed: 0,
+            friends: 0,
+            competitionsJoined: 0,
+            groupsJoined: 0,
+            shares: 0,
+            logins: 0,
+            points: 0
+        };
+
+        function saveMissionData() {
+            localStorage.setItem('userMissions', JSON.stringify(userMissions));
+            localStorage.setItem('userStats', JSON.stringify(userStats));
+        }
+
+        function getCurrentRank(points) {
+            let currentRank = RANKS[0];
+            for (const rank of RANKS) {
+                if (points >= rank.minPoints) {
+                    currentRank = rank;
+                }
+            }
+            return currentRank;
+        }
+
+        function getNextRank(points) {
+            for (const rank of RANKS) {
+                if (points < rank.minPoints) {
+                    return rank;
+                }
+            }
+            return null;
+        }
+
+        function getProgress(points) {
+            const current = getCurrentRank(points);
+            const next = getNextRank(points);
+            if (!next) return 100;
+            const currentMin = current.minPoints;
+            const nextMin = next.minPoints;
+            const progress = ((points - currentMin) / (nextMin - currentMin)) * 100;
+            return Math.min(progress, 100);
+        }
+
+        function checkMissionProgress(type) {
+            let mission = MISSIONS.find(m => m.type === type);
+            if (!mission) return;
+            
+            if (!userMissions[mission.id]) {
+                userMissions[mission.id] = { progress: 0, completed: false };
+            }
+            
+            let currentProgress = userStats[type] || 0;
+            userMissions[mission.id].progress = Math.min(currentProgress, mission.target);
+            
+            if (currentProgress >= mission.target && !userMissions[mission.id].completed) {
+                userMissions[mission.id].completed = true;
+                userStats.points = (userStats.points || 0) + mission.points;
+                saveMissionData();
+                showMissionComplete(mission);
+            }
+            
+            saveMissionData();
+            renderMissions();
+            updateRankDisplay();
+        }
+
+        function showMissionComplete(mission) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                background: linear-gradient(135deg, #4ade80, #22d3ee);
+                color: #000; padding: 16px 24px; border-radius: 12px;
+                font-weight: bold; font-size: 16px; z-index: 9999;
+                box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+                animation: slideDown 0.5s ease;
+                text-align: center;
+            `;
+            notification.innerHTML = `
+                🎉 <strong>${mission.icon} ${mission.name}</strong> مكتملة!<br>
+                <span style="font-size:14px;">+${mission.points} نقطة</span>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => notification.remove(), 500);
+            }, 4000);
+        }
+
+        function renderMissions() {
+            const container = document.getElementById('missionsList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            MISSIONS.forEach(mission => {
+                const progress = userMissions[mission.id]?.progress || 0;
+                const completed = userMissions[mission.id]?.completed || false;
+                const isComplete = progress >= mission.target;
+                
+                const div = document.createElement('div');
+                div.className = `mission-item ${completed ? 'completed' : ''}`;
+                
+                div.innerHTML = `
+                    <div class="mission-icon">${mission.icon}</div>
+                    <div class="mission-info">
+                        <div class="mission-name">${mission.name}</div>
+                        <div class="mission-desc">${mission.description}</div>
+                        <div style="font-size:11px;color:#666;margin-top:2px;">
+                            ${completed ? '✅ مكتملة' : `${progress}/${mission.target}`}
+                        </div>
+                    </div>
+                    <div class="mission-points">+${mission.points}</div>
+                    <div class="mission-status">${completed ? '✅' : '⬜'}</div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function updateRankDisplay() {
+            const points = userStats.points || 0;
+            const rank = getCurrentRank(points);
+            const next = getNextRank(points);
+            const progress = getProgress(points);
+            
+            document.getElementById('rankIcon').textContent = rank.icon;
+            document.getElementById('rankName').textContent = rank.name;
+            document.getElementById('rankName').style.color = rank.color;
+            document.getElementById('rankProgress').style.width = progress + '%';
+            document.getElementById('rankProgress').style.background = `linear-gradient(90deg, ${rank.color}, ${next?.color || rank.color})`;
+            document.getElementById('currentPoints').textContent = points;
+            document.getElementById('nextRankPoints').textContent = next?.minPoints || points;
+            
+            // تحديث البروفايل أيضاً
+            document.getElementById('profilePoints').textContent = points;
+        }
+
+        function sharePlatform() {
+            const url = window.location.href;
+            const text = '🎮 انضم إليّ على BOBBY X - منصة الألعاب والدردشة!';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'BOBBY X - منصة الألعاب',
+                    text: text,
+                    url: url
+                }).then(() => {
+                    userStats.shares = (userStats.shares || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('share');
+                }).catch(() => {});
+            } else {
+                // نسخ الرابط للحالات التي لا تدعم المشاركة
+                navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
+                    alert('✅ تم نسخ رابط المنصة! شاركه مع أصدقائك.');
+                    userStats.shares = (userStats.shares || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('share');
+                }).catch(() => {
+                    prompt('انسخ هذا الرابط وشاركه:', url);
+                });
             }
         }
 
@@ -1520,16 +1957,28 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('app').style.display = 'flex';
             
-            updateUI(user);
-            socket.emit('register', user.id);
+            // تهيئة المهام
+            userStats.logins = (userStats.logins || 0) + 1;
+            saveMissionData();
             
-            loadAllGroups();
-            loadCompetitions();
-            loadFriends();
-            
+            // تحديث واجهة المهام بعد التأكد من وجود العناصر
             setTimeout(() => {
-                joinGameGroup('cs2');
-            }, 500);
+                updateUI(user);
+                socket.emit('register', user.id);
+                
+                loadAllGroups();
+                loadCompetitions();
+                loadFriends();
+                
+                setTimeout(() => {
+                    joinGameGroup('cs2');
+                }, 500);
+                
+                // تحديث المهام والرتب
+                checkMissionProgress('login');
+                renderMissions();
+                updateRankDisplay();
+            }, 100);
         }
 
         function updateUI(user) {
@@ -1539,7 +1988,7 @@
             document.getElementById('profileAvatar').textContent = user.avatar;
             document.getElementById('profileName').textContent = user.username;
             document.getElementById('profileLevel').textContent = user.level;
-            document.getElementById('profilePoints').textContent = user.totalPoints;
+            document.getElementById('profilePoints').textContent = userStats.points || 0;
             
             let totalGames = 0;
             let totalWins = 0;
@@ -1583,6 +2032,10 @@
             
             if (tabName === 'profile') updateProfile();
             if (tabName === 'friends') loadFriends();
+            if (tabName === 'missions') {
+                renderMissions();
+                updateRankDisplay();
+            }
         }
 
         // ========================================
@@ -1594,6 +2047,17 @@
             document.querySelectorAll('.game-item').forEach(el => el.classList.remove('active'));
             const selectedItem = document.querySelector(`[data-game="${gameId}"]`);
             if (selectedItem) selectedItem.classList.add('active');
+            
+            // تحديث إحصائيات الألعاب
+            if (!userStats.gamesPlayed) userStats.gamesPlayed = 0;
+            const gamesPlayedSet = new Set(JSON.parse(localStorage.getItem('gamesPlayedSet')) || []);
+            if (!gamesPlayedSet.has(gameId)) {
+                gamesPlayedSet.add(gameId);
+                localStorage.setItem('gamesPlayedSet', JSON.stringify([...gamesPlayedSet]));
+                userStats.gamesPlayed = gamesPlayedSet.size;
+                saveMissionData();
+                checkMissionProgress('games_played');
+            }
             
             joinGameGroup(gameId);
             showTab('chat');
@@ -1618,6 +2082,11 @@
                         return;
                     }
                     
+                    // تحديث مهمة الانضمام إلى مجموعة
+                    userStats.groupsJoined = (userStats.groupsJoined || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('join_group');
+                    
                     joinSpecificGroup(group.id, gameInfo);
                 })
                 .catch(err => console.error('❌ خطأ في تحميل المجموعات:', err));
@@ -1637,7 +2106,12 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) joinSpecificGroup(data.group.id, gameInfo);
+                if (data.success) {
+                    userStats.groupsJoined = (userStats.groupsJoined || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('join_group');
+                    joinSpecificGroup(data.group.id, gameInfo);
+                }
             })
             .catch(err => console.error('❌ خطأ في إنشاء المجموعة:', err));
         }
@@ -1688,6 +2162,11 @@
                 message: text
             });
             
+            // تحديث مهمة الرسائل
+            userStats.messages = (userStats.messages || 0) + 1;
+            saveMissionData();
+            checkMissionProgress('message');
+            
             addMessage(text, 'sent');
             input.value = '';
         }
@@ -1703,7 +2182,6 @@
                 userSpan.textContent = (avatar || '👤') + ' ' + username;
                 msg.appendChild(userSpan);
                 
-                // تشغيل صوت الإشعار
                 if (username !== 'النظام' && type === 'received') {
                     playNotificationSound();
                     unreadCount++;
@@ -1827,6 +2305,11 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // تحديث مهمة المسابقات
+                    userStats.competitionsJoined = (userStats.competitionsJoined || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('join_competition');
+                    
                     alert('✅ تم الانضمام إلى المسابقة بنجاح!');
                     loadCompetitions();
                 } else {
@@ -2019,6 +2502,11 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // تحديث مهمة الأصدقاء
+                    userStats.friends = (userStats.friends || 0) + 1;
+                    saveMissionData();
+                    checkMissionProgress('friends');
+                    
                     alert('✅ تم إضافة الصديق!');
                     document.getElementById('searchResults').innerHTML = '';
                     document.getElementById('friendSearchInput').value = '';
@@ -2044,6 +2532,8 @@
 
         function logout() {
             if (confirm('هل أنت متأكد من الخروج؟')) {
+                localStorage.removeItem('userMissions');
+                localStorage.removeItem('userStats');
                 location.reload();
             }
         }
@@ -2124,7 +2614,6 @@
                 userSpan.textContent = (avatar || '👤') + ' ' + username;
                 msg.appendChild(userSpan);
                 
-                // تشغيل صوت الإشعار
                 playNotificationSound();
                 unreadCount++;
                 updateTitle();
@@ -2141,7 +2630,6 @@
         console.log('🎮 BOBBY X - منصة الألعاب');
         console.log('📡 جاري الاتصال بالسيرفر...');
 
-        // عرض رسالة في Console
         console.log('%c🎮 BOBBY X', 'font-size: 24px; font-weight: bold; color: #f7971e;');
         console.log('%cمنصة الألعاب والدردشة', 'font-size: 14px; color: #8a8a8a;');
         console.log('%c🚀 تم تحميل التطبيق بنجاح!', 'font-size: 14px; color: #4ade80;');
