@@ -1045,3 +1045,213 @@ process.on('SIGINT', () => {
     saveDatabase(db);
     process.exit(0);
 });
+// ========================================
+//  Admin Routes (لوحة تحكم المشرف)
+// ========================================
+
+// ---- التحقق من صلاحية المشرف ----
+function isAdmin(userId) {
+    const user = db.users[userId];
+    if (!user) return false;
+    // يمكن جعل المستخدم الأول مشرفاً تلقائياً
+    // أو إضافة حقل role في قاعدة البيانات
+    return user.role === 'admin' || Object.keys(db.users).indexOf(userId) === 0;
+}
+
+// ---- إحصائيات المنصة ----
+app.get('/api/admin/stats', (req, res) => {
+    const userId = req.query.userId;
+    if (!isAdmin(userId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    const stats = {
+        users: Object.keys(db.users).length,
+        groups: Object.keys(db.chatGroups).length,
+        competitions: db.competitions.length,
+        messages: 0,
+        activeUsers: 0,
+        completedMissions: 0,
+        totalPoints: 0
+    };
+
+    // حساب عدد الرسائل
+    Object.values(db.chatGroups).forEach(group => {
+        stats.messages += group.messages ? group.messages.length : 0;
+    });
+
+    // حساب المستخدمين النشطين (آخر 24 ساعة)
+    const now = Date.now();
+    Object.values(db.users).forEach(user => {
+        if (user.lastLogin) {
+            const lastLogin = new Date(user.lastLogin).getTime();
+            if (now - lastLogin < 24 * 60 * 60 * 1000) {
+                stats.activeUsers++;
+            }
+        }
+        stats.totalPoints += user.totalPoints || 0;
+    });
+
+    // حساب المهام المكتملة (من localStorage لا يمكن الوصول إليها من السيرفر)
+    // سيتم إرسالها من العميل
+
+    res.json({ success: true, stats });
+});
+
+// ---- الحصول على جميع المستخدمين ----
+app.get('/api/admin/users', (req, res) => {
+    const userId = req.query.userId;
+    if (!isAdmin(userId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    const users = Object.values(db.users).map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+    });
+
+    res.json({ success: true, users });
+});
+
+// ---- حظر مستخدم ----
+app.post('/api/admin/block-user', (req, res) => {
+    const { adminId, targetId } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    if (!db.users[targetId]) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    db.users[targetId].blocked = true;
+    db.users[targetId].status = 'blocked';
+    saveDatabase(db);
+
+    res.json({ success: true, message: 'تم حظر المستخدم بنجاح' });
+});
+
+// ---- فك حظر مستخدم ----
+app.post('/api/admin/unblock-user', (req, res) => {
+    const { adminId, targetId } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    if (!db.users[targetId]) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    db.users[targetId].blocked = false;
+    db.users[targetId].status = 'online';
+    saveDatabase(db);
+
+    res.json({ success: true, message: 'تم فك حظر المستخدم بنجاح' });
+});
+
+// ---- ترقية مستخدم إلى مشرف ----
+app.post('/api/admin/make-admin', (req, res) => {
+    const { adminId, targetId } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    if (!db.users[targetId]) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    db.users[targetId].role = 'admin';
+    saveDatabase(db);
+
+    res.json({ success: true, message: 'تمت الترقية إلى مشرف بنجاح' });
+});
+
+// ---- حذف مستخدم ----
+app.post('/api/admin/delete-user', (req, res) => {
+    const { adminId, targetId } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    if (!db.users[targetId]) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    delete db.users[targetId];
+    saveDatabase(db);
+
+    res.json({ success: true, message: 'تم حذف المستخدم بنجاح' });
+});
+
+// ---- إدارة المسابقات ----
+app.post('/api/admin/create-competition', (req, res) => {
+    const { adminId, gameId, name, prize, maxPlayers, startDate } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    const game = getGameById(gameId);
+    if (!game) {
+        return res.status(400).json({ error: 'لعبة غير موجودة' });
+    }
+
+    const competition = {
+        id: 'comp_' + Date.now(),
+        gameId: gameId,
+        gameName: game.name,
+        gameIcon: game.icon,
+        name: name,
+        prize: prize || '🏅 جائزة',
+        maxPlayers: maxPlayers || game.maxPlayers || 10,
+        participants: [],
+        startDate: startDate || new Date().toISOString(),
+        endDate: null,
+        status: 'upcoming',
+        winner: null,
+        createdBy: adminId,
+        createdAt: new Date().toISOString()
+    };
+
+    db.competitions.push(competition);
+    saveDatabase(db);
+
+    res.status(201).json({ success: true, competition });
+});
+
+app.post('/api/admin/delete-competition', (req, res) => {
+    const { adminId, competitionId } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    const index = db.competitions.findIndex(c => c.id === competitionId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'المسابقة غير موجودة' });
+    }
+
+    db.competitions.splice(index, 1);
+    saveDatabase(db);
+
+    res.json({ success: true, message: 'تم حذف المسابقة بنجاح' });
+});
+
+// ---- إضافة نقاط للمستخدم ----
+app.post('/api/admin/add-points', (req, res) => {
+    const { adminId, targetId, points } = req.body;
+    if (!isAdmin(adminId)) {
+        return res.status(403).json({ error: 'غير مصرح لك' });
+    }
+
+    if (!db.users[targetId]) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    db.users[targetId].totalPoints = (db.users[targetId].totalPoints || 0) + points;
+    saveDatabase(db);
+
+    res.json({ 
+        success: true, 
+        message: `تم إضافة ${points} نقطة للمستخدم`,
+        newTotal: db.users[targetId].totalPoints 
+    });
+});
