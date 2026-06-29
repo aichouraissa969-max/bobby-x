@@ -1,6 +1,5 @@
 /* ========================================
-   BOBBY X - التصميم الكامل
-   (مخفي: معلومات الجهاز والموقع)
+   BOBBY X - التصميم الكامل مع Responsive
    ======================================== */
 
 /* ===== Reset & Base ===== */
@@ -34,6 +33,7 @@ body {
     align-items: center;
     z-index: 1000;
     animation: fadeIn 0.5s ease;
+    padding: 20px;
 }
 
 .login-container {
@@ -42,7 +42,7 @@ body {
     padding: 40px;
     border-radius: 24px;
     width: 420px;
-    max-width: 90%;
+    max-width: 100%;
     border: 1px solid rgba(255, 255, 255, 0.05);
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -161,6 +161,7 @@ body {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
 }
 
 .login-info span {
@@ -192,7 +193,7 @@ body {
     gap: 12px;
     overflow-y: auto;
     flex-shrink: 0;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, transform 0.3s ease;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -412,7 +413,7 @@ body {
 }
 
 /* ========================================
-   تبويب الدردشة
+   بقية التصميم (دردشة، مسابقات، إلخ)
    ======================================== */
 .chat-container {
     display: flex;
@@ -429,6 +430,8 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     margin-bottom: 12px;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .chat-header #currentGroupName {
@@ -527,6 +530,7 @@ body {
     font-size: 14px;
     outline: none;
     transition: all 0.3s ease;
+    min-width: 0;
 }
 
 .chat-input input:focus {
@@ -550,6 +554,7 @@ body {
     transition: all 0.3s ease;
     font-size: 14px;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .chat-input button:hover {
@@ -558,569 +563,533 @@ body {
 }
 
 /* ========================================
-   الدردشة العشوائية
+   Responsive Design - جميع الشاشات
    ======================================== */
-.random-chat-area {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 16px 20px 12px;
+
+/* ===== شاشات متوسطة (تابلت) ===== */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+        padding: 12px 10px;
+    }
+    
+    .logo {
+        font-size: 20px;
+    }
+    
+    .game-item {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+    
+    .game-icon {
+        font-size: 18px;
+        width: 26px;
+    }
+    
+    .tabs {
+        padding: 4px 10px;
+    }
+    
+    .tab-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .login-container {
+        width: 380px;
+        padding: 30px;
+    }
+    
+    .login-logo {
+        font-size: 40px;
+    }
 }
 
-.random-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    flex-wrap: wrap;
-    gap: 10px;
-    flex-shrink: 0;
+/* ===== شاشات صغيرة (تابلت صغير / جوال كبير) ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+        padding: 10px 8px;
+        transform: translateX(0);
+    }
+    
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+        position: fixed;
+        height: 100vh;
+        z-index: 999;
+        width: 280px;
+    }
+    
+    .logo {
+        font-size: 18px;
+        padding-bottom: 8px;
+    }
+    
+    .avatar-big {
+        font-size: 28px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .profile-info h3 {
+        font-size: 13px;
+    }
+    
+    .game-item {
+        padding: 5px 8px;
+        font-size: 12px;
+        gap: 6px;
+    }
+    
+    .game-icon {
+        font-size: 16px;
+        width: 22px;
+    }
+    
+    .game-online {
+        font-size: 10px;
+    }
+    
+    .tabs {
+        padding: 4px 8px;
+        gap: 2px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    .tab-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    
+    .tab-btn.active {
+        background: rgba(102, 126, 234, 0.18);
+        color: #fff;
+    }
+    
+    .chat-container,
+    .random-chat-area {
+        padding: 10px 12px;
+    }
+    
+    .chat-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .chat-header #currentGroupName {
+        font-size: 15px;
+    }
+    
+    .chat-members {
+        font-size: 11px;
+    }
+    
+    .message {
+        max-width: 85%;
+        font-size: 13px;
+        padding: 8px 14px;
+    }
+    
+    .login-container {
+        padding: 28px 20px;
+        width: 95%;
+    }
+    
+    .login-logo {
+        font-size: 38px;
+    }
+    
+    .login-subtitle {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+    
+    .login-info {
+        gap: 15px;
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .profile-card {
+        padding: 20px;
+    }
+    
+    .profile-avatar {
+        font-size: 56px;
+    }
+    
+    .profile-stats {
+        gap: 16px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+    
+    .competitions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .friends-search {
+        flex-direction: column;
+    }
+    
+    .friend-search-input {
+        width: 100%;
+    }
+    
+    .random-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .random-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    /* زر القائمة للجوال */
+    .menu-toggle {
+        display: flex !important;
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 1000;
+        background: rgba(26, 26, 46, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 20px;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* زر إغلاق القائمة */
+    .sidebar-close {
+        display: flex !important;
+        align-self: flex-end;
+        background: transparent;
+        border: none;
+        color: #888;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
 }
 
-.partner-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* ===== شاشات صغيرة جداً (جوال) ===== */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100% !important;
+        max-width: 320px;
+        padding: 12px 10px;
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        z-index: 1000;
+        background: rgba(10, 14, 23, 0.98);
+        border-left: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: transparent;
+        border: none;
+        color: #888;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .main-content {
+        width: 100%;
+    }
+    
+    .tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding: 4px 6px;
+        gap: 2px;
+    }
+    
+    .tab-btn {
+        padding: 4px 10px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+    
+    .login-container {
+        padding: 20px 16px;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px;
+        margin: 10px;
+    }
+    
+    .login-logo {
+        font-size: 32px;
+    }
+    
+    .login-subtitle {
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .avatar-option {
+        font-size: 22px;
+        width: 36px;
+        height: 36px;
+        padding: 4px;
+    }
+    
+    .login-input {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .login-btn {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .login-info {
+        gap: 12px;
+        font-size: 11px;
+        flex-wrap: wrap;
+    }
+    
+    .chat-container,
+    .random-chat-area {
+        padding: 8px 10px;
+    }
+    
+    .chat-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .chat-header #currentGroupName {
+        font-size: 14px;
+    }
+    
+    .chat-members {
+        font-size: 10px;
+    }
+    
+    .message {
+        max-width: 90%;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .chat-input {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .chat-input input {
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 12px;
+    }
+    
+    .chat-input button {
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 12px;
+        width: 100%;
+    }
+    
+    .profile-card {
+        padding: 16px;
+    }
+    
+    .profile-avatar {
+        font-size: 48px;
+    }
+    
+    .profile-card h2 {
+        font-size: 20px;
+    }
+    
+    .profile-stats {
+        gap: 12px;
+    }
+    
+    .stat-value {
+        font-size: 16px;
+    }
+    
+    .stat-label {
+        font-size: 10px;
+    }
+    
+    .game-stat-item {
+        padding: 6px 10px;
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .game-stat-detail {
+        font-size: 11px;
+    }
+    
+    .competitions-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .competitions-header h2 {
+        font-size: 18px;
+    }
+    
+    .create-comp-btn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+    
+    .competitions-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .competition-card {
+        padding: 14px 16px;
+    }
+    
+    .matchmaking-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .matchmaking-controls select,
+    .matchmaking-controls button {
+        width: 100%;
+    }
+    
+    .match-status {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .friend-item {
+        padding: 8px 10px;
+        flex-wrap: wrap;
+    }
+    
+    .friend-avatar {
+        font-size: 22px;
+    }
+    
+    .random-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .random-controls {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .random-controls select,
+    .random-controls button {
+        width: 100%;
+    }
+    
+    .partner-info {
+        justify-content: center;
+    }
 }
 
-.partner-avatar {
-    font-size: 32px;
-}
-
-.random-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.game-filter {
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    color: #fff;
-    cursor: pointer;
-    outline: none;
-    font-size: 13px;
-}
-
-.game-filter:focus {
-    border-color: #667eea;
-}
-
-.game-filter option {
-    background: #1a1a2e;
-    color: #fff;
-}
-
-.find-btn {
-    padding: 6px 18px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
-    border: none;
-    border-radius: 20px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 13px;
-}
-
-.find-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.2);
-}
-
-.skip-btn {
-    padding: 6px 18px;
-    background: rgba(248, 113, 113, 0.12);
-    border: 1px solid rgba(248, 113, 113, 0.15);
-    border-radius: 20px;
-    color: #f87171;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 13px;
-}
-
-.skip-btn:hover {
-    background: rgba(248, 113, 113, 0.2);
+/* ===== شاشات كبيرة (4K) ===== */
+@media (min-width: 1920px) {
+    .sidebar {
+        width: 340px;
+        padding: 24px 20px;
+    }
+    
+    .logo {
+        font-size: 32px;
+    }
+    
+    .game-item {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    .game-icon {
+        font-size: 24px;
+        width: 36px;
+    }
+    
+    .tab-btn {
+        padding: 10px 24px;
+        font-size: 16px;
+    }
+    
+    .chat-header #currentGroupName {
+        font-size: 22px;
+    }
+    
+    .message {
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+    
+    .profile-card {
+        padding: 40px;
+    }
+    
+    .profile-avatar {
+        font-size: 100px;
+    }
+    
+    .profile-card h2 {
+        font-size: 34px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+    }
 }
 
 /* ========================================
-   المسابقات
+   إظهار/إخفاء أزرار الجوال
    ======================================== */
-.competitions-container {
-    padding: 16px 20px;
-    overflow-y: auto;
-    flex: 1;
+.menu-toggle {
+    display: none;
 }
 
-.competitions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 10px;
+.sidebar-close {
+    display: none;
 }
 
-.competitions-header h2 {
-    font-size: 22px;
-}
-
-.create-comp-btn {
-    padding: 8px 20px;
-    background: linear-gradient(135deg, #f7971e, #ffd200);
-    border: none;
-    border-radius: 10px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-}
-
-.create-comp-btn:hover {
-    transform: scale(1.04);
-    box-shadow: 0 4px 20px rgba(247, 151, 30, 0.2);
-}
-
-.competitions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
-}
-
-.competition-card {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 14px;
-    padding: 18px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    transition: all 0.3s ease;
-}
-
-.competition-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(102, 126, 234, 0.2);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-.competition-card .comp-title {
-    font-size: 17px;
-    font-weight: bold;
-    margin-bottom: 4px;
-}
-
-.competition-card .comp-game {
-    font-size: 13px;
-    color: #666;
-}
-
-.competition-card .comp-prize {
-    color: #ffd200;
-    font-size: 14px;
-    margin: 8px 0;
-}
-
-.competition-card .comp-status {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.status-active {
-    background: rgba(74, 222, 128, 0.15);
-    color: #4ade80;
-}
-
-.status-upcoming {
-    background: rgba(251, 191, 36, 0.15);
-    color: #fbbf24;
-}
-
-.status-finished {
-    background: rgba(248, 113, 113, 0.15);
-    color: #f87171;
-}
-
-.competition-card .comp-players {
-    margin: 8px 0 10px;
-    font-size: 13px;
-    color: #666;
-}
-
-.join-comp-btn {
-    padding: 6px 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 13px;
-}
-
-.join-comp-btn:hover {
-    transform: scale(1.04);
-}
-
-.leave-comp-btn {
-    padding: 6px 16px;
-    background: rgba(248, 113, 113, 0.15);
-    border: 1px solid rgba(248, 113, 113, 0.2);
-    border-radius: 8px;
-    color: #f87171;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 13px;
-}
-
-.leave-comp-btn:hover {
-    background: rgba(248, 113, 113, 0.25);
-}
-
-.winner {
-    color: #ffd200;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.empty-state {
-    color: #555;
-    text-align: center;
-    padding: 40px;
-    font-size: 16px;
-}
-
-/* ========================================
-   البروفايل
-   ======================================== */
-.profile-container {
-    padding: 20px 24px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.profile-card {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 18px;
-    padding: 28px 30px;
-    text-align: center;
-    max-width: 550px;
-    margin: 0 auto 24px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.profile-avatar {
-    font-size: 72px;
-    margin-bottom: 8px;
-}
-
-.profile-card h2 {
-    font-size: 26px;
-    margin-bottom: 4px;
-}
-
-.profile-stats {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 22px;
-    font-weight: bold;
-    display: block;
-    background: linear-gradient(45deg, #f7971e, #ffd200);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.stat-label {
-    font-size: 12px;
-    color: #666;
-}
-
-.profile-game-stats {
-    max-width: 550px;
-    margin: 0 auto;
-}
-
-.profile-game-stats h3 {
-    margin-bottom: 12px;
-    font-size: 18px;
-}
-
-.game-stat-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    margin-bottom: 4px;
-    transition: background 0.2s ease;
-}
-
-.game-stat-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.game-stat-icon {
-    font-size: 18px;
-    width: 28px;
-    text-align: center;
-}
-
-.game-stat-name {
-    flex: 1;
-    font-size: 14px;
-}
-
-.game-stat-detail {
-    font-size: 13px;
-    color: #666;
-}
-
-.game-stat-rank {
-    font-size: 12px;
-    color: #ffd200;
-    font-weight: bold;
-}
-
-/* ========================================
-   البحث عن مباراة
-   ======================================== */
-.matchmaking-container {
-    padding: 20px 24px;
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.matchmaking-container h2 {
-    font-size: 24px;
-    margin-bottom: 16px;
-}
-
-.matchmaking-controls {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 16px 0;
-}
-
-.find-match-btn {
-    padding: 10px 30px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
-    border: none;
-    border-radius: 12px;
-    color: #000;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.find-match-btn:hover {
-    transform: scale(1.04);
-    box-shadow: 0 4px 25px rgba(74, 222, 128, 0.2);
-}
-
-.match-status {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 12px;
-    padding: 18px 24px;
-    margin: 12px auto;
-    max-width: 480px;
-    width: 100%;
-    min-height: 80px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.match-status p {
-    color: #888;
-}
-
-.match-players {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 10px;
-}
-
-.player-tag {
-    background: rgba(102, 126, 234, 0.12);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    border: 1px solid rgba(102, 126, 234, 0.12);
-}
-
-.player-tag.me {
-    background: rgba(74, 222, 128, 0.12);
-    border-color: rgba(74, 222, 128, 0.2);
-    color: #4ade80;
-}
-
-/* ========================================
-   الأصدقاء
-   ======================================== */
-.friends-container {
-    padding: 16px 20px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.friends-container h2 {
-    font-size: 22px;
-    margin-bottom: 14px;
-}
-
-.friends-search {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-}
-
-.friend-search-input {
-    flex: 1;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s ease;
-    min-width: 160px;
-}
-
-.friend-search-input:focus {
-    border-color: #667eea;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.friend-search-input::placeholder {
-    color: #555;
-}
-
-.search-friend-btn {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-friend-btn:hover {
-    transform: scale(1.04);
-}
-
-.friends-list {
-    margin-top: 10px;
-}
-
-.friend-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    margin-bottom: 4px;
-    transition: background 0.2s ease;
-}
-
-.friend-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.friend-avatar {
-    font-size: 28px;
-}
-
-.friend-name {
-    flex: 1;
-    font-size: 14px;
-}
-
-.friend-status {
-    font-size: 12px;
-}
-
-.friend-status.online {
-    color: #4ade80;
-}
-
-.friend-status.offline {
-    color: #666;
-}
-
-.search-results {
-    margin-top: 12px;
-}
-
-.search-result {
-    border: 1px solid rgba(102, 126, 234, 0.08);
-}
-
-.add-friend-btn {
-    padding: 4px 14px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
-    border: none;
-    border-radius: 8px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 12px;
-}
-
-.add-friend-btn:hover {
-    transform: scale(1.05);
-}
-
-/* ========================================
-   ⚠️ إخفاء تبويب معلومات الجهاز والموقع
-   ======================================== */
-
-/* إخفاء تبويب معلومات الجهاز من شريط التبويبات */
-.tab-btn[data-tab="device"] {
-    display: none !important;
-}
-
-/* إخفاء محتوى تبويب معلومات الجهاز */
-#tab-device {
-    display: none !important;
-}
-
-/* إخفاء أي عناصر متعلقة بالجهاز */
-.device-info-container,
-.device-card,
-#deviceInfoContent {
-    display: none !important;
-}
-
-/* إخفاء زر تحديث معلومات الجهاز */
-button[onclick="loadDeviceInfo()"] {
-    display: none !important;
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block !important;
+    }
+    
+    .sidebar-close {
+        display: block !important;
+    }
 }
 
 /* ========================================
@@ -1141,96 +1110,4 @@ button[onclick="loadDeviceInfo()"] {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(102, 126, 234, 0.5);
-}
-
-/* ========================================
-   استجابة للشاشات الصغيرة
-   ======================================== */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-        padding: 12px 10px;
-    }
-    
-    .logo { font-size: 20px; }
-    .game-item { padding: 6px 8px; font-size: 13px; }
-    .game-icon { font-size: 18px; width: 26px; }
-    .tabs { padding: 4px 10px; }
-    .tab-btn { padding: 6px 12px; font-size: 12px; }
-    .profile-stats { gap: 20px; }
-    .competitions-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-}
-
-@media (max-width: 480px) {
-    .sidebar { display: none; }
-    .main-content { width: 100%; }
-    
-    .tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding: 4px 6px;
-    }
-    
-    .tab-btn {
-        padding: 4px 10px;
-        font-size: 11px;
-        white-space: nowrap;
-    }
-    
-    .login-container { padding: 20px 16px; }
-    .login-logo { font-size: 32px; }
-    .avatar-option { font-size: 22px; width: 36px; height: 36px; }
-    
-    .chat-container,
-    .random-chat-area { padding: 8px 10px; }
-    
-    .chat-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-    
-    .chat-header #currentGroupName { font-size: 14px; }
-    .message { max-width: 90%; font-size: 12px; padding: 6px 12px; }
-    
-    .chat-input {
-        flex-direction: column;
-        gap: 6px;
-    }
-    
-    .chat-input button {
-        width: 100%;
-        padding: 8px 16px;
-        border-radius: 12px;
-    }
-    
-    .profile-card { padding: 16px; }
-    .profile-avatar { font-size: 48px; }
-    .profile-card h2 { font-size: 20px; }
-    .profile-stats { gap: 12px; }
-    .stat-value { font-size: 16px; }
-    
-    .competitions-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .matchmaking-controls {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .matchmaking-controls select,
-    .matchmaking-controls button {
-        width: 100%;
-    }
-    
-    .friends-search {
-        flex-direction: column;
-    }
-    
-    .friend-search-input { width: 100%; }
-    .random-header { flex-direction: column; align-items: stretch; }
-    .random-controls { justify-content: center; }
 }
