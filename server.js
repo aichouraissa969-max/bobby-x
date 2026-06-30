@@ -5,17 +5,14 @@ const io = require('socket.io')(http);
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
-const geoip = require('geoip-lite');
-const os = require('os');
 
 // ========================================
 //  الإعدادات الأساسية
 // ========================================
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'database.json');
-const LOGS_FILE = path.join(__dirname, 'data', 'user_logs.json');
 const SALT_ROUNDS = 10;
 
 // ========================================
@@ -45,197 +42,42 @@ const authLimiter = rateLimit({
 });
 
 // ========================================
-//  دوال جمع وحفظ المعلومات (مخفية عن المستخدم)
+//  كائن GAMES الكامل (13 لعبة)
 // ========================================
-
-// ---- الحصول على IP الحقيقي ----
-function getClientIP(req) {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-           req.headers['cf-connecting-ip'] ||
-           req.headers['x-real-ip'] ||
-           req.connection?.remoteAddress ||
-           req.socket?.remoteAddress ||
-           req.ip ||
-           '127.0.0.1';
-}
-
-// ---- الحصول على معلومات الموقع من IP ----
-function getLocationFromIP(ip) {
-    try {
-        const geo = geoip.lookup(ip);
-        if (geo) {
-            return {
-                country: geo.country || 'Unknown',
-                countryCode: geo.country || 'Unknown',
-                city: geo.city || 'Unknown',
-                region: geo.region || 'Unknown',
-                timezone: geo.timezone || 'Unknown',
-                lat: geo.ll?.[0] || null,
-                lon: geo.ll?.[1] || null,
-                zip: geo.zip || 'Unknown'
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error('❌ خطأ في تحديد الموقع:', error);
-        return null;
+const GAMES = {
+    pc: {
+        cs2: { id: 'cs2', name: '💀 كونتر سترايك 2', category: 'PC', type: 'shooter', maxPlayers: 10, icon: '💀' },
+        pubg: { id: 'pubg', name: '🪂 ببجي', category: 'PC/Mobile', type: 'battle_royale', maxPlayers: 100, icon: '🪂' },
+        valorant: { id: 'valorant', name: '⚡ فالورانت', category: 'PC', type: 'shooter', maxPlayers: 10, icon: '⚡' },
+        lol: { id: 'lol', name: '⚔️ ليج أوف ليجندز', category: 'PC', type: 'moba', maxPlayers: 10, icon: '⚔️' },
+        rocket_league: { id: 'rocket_league', name: '🚀 روكيت ليغ', category: 'PC', type: 'sports', maxPlayers: 8, icon: '🚀' },
+        minecraft: { id: 'minecraft', name: '⛏️ ماين كرافت', category: 'PC', type: 'sandbox', maxPlayers: 20, icon: '⛏️' }
+    },
+    mobile: {
+        freefire: { id: 'freefire', name: '🔥 فري فاير', category: 'Mobile', type: 'battle_royale', maxPlayers: 50, icon: '🔥' },
+        cod_mobile: { id: 'cod_mobile', name: '💣 كول أوف ديوتي موبايل', category: 'Mobile', type: 'shooter', maxPlayers: 10, icon: '💣' },
+        mlbb: { id: 'mlbb', name: '🏹 موبايل ليجندز', category: 'Mobile', type: 'moba', maxPlayers: 10, icon: '🏹' },
+        stumble_guys: { id: 'stumble_guys', name: '🏃 ستامبل غايز', category: 'Mobile', type: 'battle_royale', maxPlayers: 32, icon: '🏃' },
+        among_us: { id: 'among_us', name: '👽 أمونغ أس', category: 'Mobile', type: 'social_deduction', maxPlayers: 15, icon: '👽' },
+        roblox: { id: 'roblox', name: '🎲 روبلوكس', category: 'Mobile', type: 'sandbox', maxPlayers: 50, icon: '🎲' }
+    },
+    browser: {
+        krunker: { id: 'krunker', name: '🎮 كرانكر', category: 'Browser', type: 'shooter', maxPlayers: 8, icon: '🎮' }
     }
+};
+
+function getAllGames() {
+    const all = [];
+    Object.values(GAMES).forEach(category => {
+        Object.values(category).forEach(game => {
+            all.push(game);
+        });
+    });
+    return all;
 }
 
-// ---- جمع معلومات المستخدم الكاملة (مخفية) ----
-function collectUserInfo(req, userId = null, username = null) {
-    const ip = getClientIP(req);
-    const location = getLocationFromIP(ip);
-    
-    const userInfo = {
-        userId: userId || 'anonymous',
-        username: username || 'غير مسجل',
-        ip: ip,
-        timestamp: new Date().toISOString(),
-        userAgent: req.headers['user-agent'] || 'Unknown',
-        platform: req.headers['sec-ch-ua-platform'] || 'Unknown',
-        location: location,
-        coordinates: location ? {
-            lat: location.lat,
-            lon: location.lon,
-            mapUrl: `https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lon}&zoom=15`,
-            googleMaps: `https://www.google.com/maps?q=${location.lat},${location.lon}`
-        } : null,
-        endpoint: req.originalUrl || req.url,
-        method: req.method,
-        hostname: os.hostname()
-    };
-    
-    return userInfo;
-}
-
-// ---- حفظ معلومات المستخدم في ملف JSON (مخفي) ----
-function saveUserLog(userInfo) {
-    try {
-        // إنشاء المجلد إذا لم يكن موجوداً
-        const dataDir = path.dirname(LOGS_FILE);
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        
-        // قراءة الملف الحالي
-        let logs = [];
-        if (fs.existsSync(LOGS_FILE)) {
-            try {
-                const content = fs.readFileSync(LOGS_FILE, 'utf8');
-                logs = JSON.parse(content);
-            } catch (e) {
-                logs = [];
-            }
-        }
-        
-        // إضافة السجل الجديد
-        logs.push(userInfo);
-        
-        // الحفاظ على آخر 10000 سجل فقط
-        if (logs.length > 10000) {
-            logs = logs.slice(-10000);
-        }
-        
-        // حفظ الملف
-        fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2));
-        
-        // أيضاً حفظ في ملف CSV للتسهيل
-        saveCSVLog(userInfo);
-        
-        // حفظ في ملف نصي منظم
-        saveTXTLog(userInfo);
-        
-        return true;
-    } catch (error) {
-        console.error('❌ خطأ في حفظ سجل المستخدم:', error);
-        return false;
-    }
-}
-
-// ---- حفظ في ملف CSV ----
-function saveCSVLog(userInfo) {
-    try {
-        const csvDir = path.join(__dirname, 'data', 'csv');
-        if (!fs.existsSync(csvDir)) {
-            fs.mkdirSync(csvDir, { recursive: true });
-        }
-        
-        const today = new Date().toISOString().split('T')[0];
-        const csvFile = path.join(csvDir, `users_${today}.csv`);
-        const headers = ['التاريخ','المستخدم','IP','الدولة','المدينة','خط العرض','خط الطول','نظام التشغيل','المتصفح'];
-        
-        // التحقق من وجود الملف
-        let exists = fs.existsSync(csvFile);
-        
-        // كتابة البيانات
-        const row = [
-            new Date(userInfo.timestamp).toLocaleString('ar-EG'),
-            userInfo.username || 'غير مسجل',
-            userInfo.ip || 'غير معروف',
-            userInfo.location?.country || 'غير معروف',
-            userInfo.location?.city || 'غير معروف',
-            userInfo.coordinates?.lat || 'غير معروف',
-            userInfo.coordinates?.lon || 'غير معروف',
-            userInfo.platform || 'غير معروف',
-            userInfo.userAgent?.split(' ')[0] || 'غير معروف'
-        ];
-        
-        const content = (exists ? '' : headers.join(',') + '\n') + row.join(',') + '\n';
-        fs.appendFileSync(csvFile, content);
-        
-        return true;
-    } catch (error) {
-        console.error('❌ خطأ في حفظ CSV:', error);
-        return false;
-    }
-}
-
-// ---- حفظ في ملف نصي منظم (TXT) ----
-function saveTXTLog(userInfo) {
-    try {
-        const reportsDir = path.join(__dirname, 'data', 'reports');
-        if (!fs.existsSync(reportsDir)) {
-            fs.mkdirSync(reportsDir, { recursive: true });
-        }
-        
-        const today = new Date().toISOString().split('T')[0];
-        const txtFile = path.join(reportsDir, `report_${today}.txt`);
-        
-        let content = '';
-        if (fs.existsSync(txtFile)) {
-            content = fs.readFileSync(txtFile, 'utf8');
-        }
-        
-        const entry = `
-${'='.repeat(70)}
-📅 التاريخ: ${new Date(userInfo.timestamp).toLocaleString('ar-EG')}
-👤 المستخدم: ${userInfo.username || 'غير مسجل'} (${userInfo.userId || 'مجهول'})
-🌐 الـ IP: ${userInfo.ip || 'غير معروف'}
-📍 الدولة: ${userInfo.location?.country || 'غير معروف'}
-🏙️ المدينة: ${userInfo.location?.city || 'غير معروف'}
-📏 خط العرض: ${userInfo.coordinates?.lat || 'غير معروف'}
-📐 خط الطول: ${userInfo.coordinates?.lon || 'غير معروف'}
-🗺️ الخريطة: ${userInfo.coordinates?.mapUrl || 'غير متوفرة'}
-💻 نظام التشغيل: ${userInfo.platform || 'غير معروف'}
-🌍 المتصفح: ${userInfo.userAgent?.split(' ')[0] || 'غير معروف'}
-🔗 المسار: ${userInfo.endpoint || 'غير معروف'}
-${'='.repeat(70)}
-`;
-        
-        fs.appendFileSync(txtFile, entry);
-        return true;
-    } catch (error) {
-        console.error('❌ خطأ في حفظ TXT:', error);
-        return false;
-    }
-}
-
-// ---- دالة تسجيل دخول المستخدم (تسجيل تلقائي) ----
-function logUserActivity(req, userId = null, username = null) {
-    const userInfo = collectUserInfo(req, userId, username);
-    saveUserLog(userInfo);
-    return userInfo;
+function getGameById(id) {
+    return getAllGames().find(g => g.id === id);
 }
 
 // ========================================
@@ -278,40 +120,6 @@ function saveDatabase(data) {
 }
 
 let db = loadDatabase();
-
-// ========================================
-//  تعريف الألعاب
-// ========================================
-const GAMES = {
-    pc: {
-        cs2: { id: 'cs2', name: '💀 كونتر سترايك 2', category: 'PC', type: 'shooter', maxPlayers: 10, icon: '💀' },
-        pubg: { id: 'pubg', name: '🪂 ببجي', category: 'PC/Mobile', type: 'battle_royale', maxPlayers: 100, icon: '🪂' },
-        valorant: { id: 'valorant', name: '⚡ فالورانت', category: 'PC', type: 'shooter', maxPlayers: 10, icon: '⚡' },
-        lol: { id: 'lol', name: '⚔️ ليج أوف ليجندز', category: 'PC', type: 'moba', maxPlayers: 10, icon: '⚔️' }
-    },
-    mobile: {
-        freefire: { id: 'freefire', name: '🔥 فري فاير', category: 'Mobile', type: 'battle_royale', maxPlayers: 50, icon: '🔥' },
-        cod_mobile: { id: 'cod_mobile', name: '💣 كول أوف ديوتي موبايل', category: 'Mobile', type: 'shooter', maxPlayers: 10, icon: '💣' },
-        mlbb: { id: 'mlbb', name: '🏹 موبايل ليجندز', category: 'Mobile', type: 'moba', maxPlayers: 10, icon: '🏹' }
-    },
-    browser: {
-        krunker: { id: 'krunker', name: '🎮 كرانكر', category: 'Browser', type: 'shooter', maxPlayers: 8, icon: '🎮' }
-    }
-};
-
-function getAllGames() {
-    const all = [];
-    Object.values(GAMES).forEach(category => {
-        Object.values(category).forEach(game => {
-            all.push(game);
-        });
-    });
-    return all;
-}
-
-function getGameById(id) {
-    return getAllGames().find(g => g.id === id);
-}
 
 // ========================================
 //  تهيئة مجموعات الألعاب
@@ -380,14 +188,13 @@ function logLoginAttempt(username, ip, success) {
 }
 
 // ========================================
-//  API Routes
+//  API Routes - المستخدمين
 // ========================================
 
-// ---- تسجيل مستخدم جديد (مع تسجيل معلوماته) ----
 app.post('/api/register', authLimiter, async (req, res) => {
     try {
         const { username, password, avatar } = req.body;
-        const clientIP = getClientIP(req);
+        const clientIP = req.ip || req.connection.remoteAddress;
 
         if (!username || username.length < 3) {
             return res.status(400).json({ error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' });
@@ -444,9 +251,6 @@ app.post('/api/register', authLimiter, async (req, res) => {
         logLoginAttempt(username, clientIP, true);
         saveDatabase(db);
 
-        // ✅ تسجيل معلومات المستخدم (IP والموقع) - مخفي
-        logUserActivity(req, userId, username);
-
         const { password: _, ...userWithoutPassword } = user;
 
         res.status(201).json({
@@ -459,11 +263,10 @@ app.post('/api/register', authLimiter, async (req, res) => {
     }
 });
 
-// ---- تسجيل الدخول (مع تسجيل معلوماته) ----
 app.post('/api/login', authLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
-        const clientIP = getClientIP(req);
+        const clientIP = req.ip || req.connection.remoteAddress;
 
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
@@ -488,9 +291,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
         logLoginAttempt(username, clientIP, true);
 
-        // ✅ تسجيل معلومات المستخدم (IP والموقع) - مخفي
-        logUserActivity(req, user.id, username);
-
         const { password: _, ...userWithoutPassword } = user;
 
         res.json({
@@ -503,7 +303,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
     }
 });
 
-// ---- تغيير كلمة المرور ----
 app.post('/api/change-password', async (req, res) => {
     try {
         const { userId, currentPassword, newPassword } = req.body;
@@ -531,9 +330,6 @@ app.post('/api/change-password', async (req, res) => {
         user.lastPasswordChange = new Date().toISOString();
         saveDatabase(db);
 
-        // ✅ تسجيل تغيير كلمة المرور
-        logUserActivity(req, userId, user.username);
-
         res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح' });
     } catch (error) {
         console.error('❌ خطأ في تحديث كلمة المرور:', error);
@@ -541,7 +337,6 @@ app.post('/api/change-password', async (req, res) => {
     }
 });
 
-// ---- الحصول على معلومات المستخدم ----
 app.get('/api/users/:id', (req, res) => {
     const user = db.users[req.params.id];
     if (!user) {
@@ -560,7 +355,10 @@ app.get('/api/users', (req, res) => {
     res.json(users);
 });
 
-// ---- المجموعات ----
+// ========================================
+//  API Routes - المجموعات
+// ========================================
+
 app.post('/api/groups', (req, res) => {
     const { name, gameId, creatorId } = req.body;
 
@@ -639,7 +437,10 @@ app.post('/api/groups/:id/leave', (req, res) => {
     res.json({ success: true, group: group });
 });
 
-// ---- المسابقات ----
+// ========================================
+//  API Routes - المسابقات
+// ========================================
+
 app.post('/api/competitions', (req, res) => {
     const { gameId, name, prize, maxPlayers, startDate, createdBy } = req.body;
 
@@ -693,7 +494,10 @@ app.post('/api/competitions/:id/join', (req, res) => {
     res.json({ success: true, competition: competition });
 });
 
-// ---- البحث عن مباراة ----
+// ========================================
+//  API Routes - البحث عن مباراة
+// ========================================
+
 app.post('/api/matchmaking', (req, res) => {
     const { gameId, userId } = req.body;
 
@@ -737,7 +541,10 @@ app.post('/api/matchmaking', (req, res) => {
     res.json({ success: true, room: newRoom, isNew: true });
 });
 
-// ---- الأصدقاء ----
+// ========================================
+//  API Routes - الأصدقاء
+// ========================================
+
 app.post('/api/friends/add', (req, res) => {
     const { userId, friendId } = req.body;
 
@@ -777,7 +584,10 @@ app.get('/api/friends/:userId', (req, res) => {
     res.json(friends);
 });
 
-// ---- البحث عن مستخدمين ----
+// ========================================
+//  API Routes - البحث عن مستخدمين
+// ========================================
+
 app.get('/api/search/users', (req, res) => {
     const query = req.query.q || '';
     const users = Object.values(db.users);
@@ -792,7 +602,10 @@ app.get('/api/search/users', (req, res) => {
     res.json(results);
 });
 
-// ---- إحصائيات ----
+// ========================================
+//  API Routes - إحصائيات
+// ========================================
+
 app.get('/api/stats/:userId', (req, res) => {
     const user = db.users[req.params.userId];
     if (!user) {
@@ -1000,21 +813,11 @@ setInterval(() => {
 // ========================================
 
 console.log('\n' + '='.repeat(60));
-console.log('🚀 BOBBY X Server (مع جمع المعلومات)');
+console.log('🚀 BOBBY X Server');
 console.log('='.repeat(60));
-console.log(`📛 اسم الجهاز: ${os.hostname()}`);
-console.log(`💿 نظام التشغيل: ${os.platform()} (${os.release()})`);
+console.log(`📛 اسم الجهاز: ${require('os').hostname()}`);
+console.log(`💿 نظام التشغيل: ${require('os').platform()} (${require('os').release()})`);
 console.log('='.repeat(60));
-
-// إنشاء المجلدات
-const folders = ['data', 'data/csv', 'data/reports'];
-folders.forEach(folder => {
-    const folderPath = path.join(__dirname, folder);
-    if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath, { recursive: true });
-        console.log(`📁 تم إنشاء مجلد: ${folder}`);
-    }
-});
 
 initializeGameGroups();
 
@@ -1022,14 +825,10 @@ http.listen(PORT, () => {
     console.log(`\n✅ يعمل على http://localhost:${PORT}`);
     console.log(`🔐 نظام المصادقة: bcrypt (مفعل)`);
     console.log(`🛡️ الحماية: Rate Limiting + CORS`);
-    console.log(`📍 جمع المعلومات: IP + الموقع + خطوط الطول والعرض`);
     console.log(`📊 عدد المستخدمين: ${Object.keys(db.users).length}`);
     console.log(`💬 عدد المجموعات: ${Object.keys(db.chatGroups).length}`);
     console.log(`🏆 عدد المسابقات: ${db.competitions.length}`);
-    console.log(`📁 الملفات المحفوظة:`);
-    console.log(`  📄 user_logs.json (جميع السجلات)`);
-    console.log(`  📊 data/csv/users_YYYY-MM-DD.csv (ملف CSV)`);
-    console.log(`  📄 data/reports/report_YYYY-MM-DD.txt (تقرير نصي)`);
+    console.log(`🎮 عدد الألعاب: ${getAllGames().length}`);
     console.log('='.repeat(60) + '\n');
 });
 
@@ -1044,214 +843,4 @@ process.on('SIGINT', () => {
     console.log('\n🛑 إيقاف السيرفر...');
     saveDatabase(db);
     process.exit(0);
-});
-// ========================================
-//  Admin Routes (لوحة تحكم المشرف)
-// ========================================
-
-// ---- التحقق من صلاحية المشرف ----
-function isAdmin(userId) {
-    const user = db.users[userId];
-    if (!user) return false;
-    // يمكن جعل المستخدم الأول مشرفاً تلقائياً
-    // أو إضافة حقل role في قاعدة البيانات
-    return user.role === 'admin' || Object.keys(db.users).indexOf(userId) === 0;
-}
-
-// ---- إحصائيات المنصة ----
-app.get('/api/admin/stats', (req, res) => {
-    const userId = req.query.userId;
-    if (!isAdmin(userId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    const stats = {
-        users: Object.keys(db.users).length,
-        groups: Object.keys(db.chatGroups).length,
-        competitions: db.competitions.length,
-        messages: 0,
-        activeUsers: 0,
-        completedMissions: 0,
-        totalPoints: 0
-    };
-
-    // حساب عدد الرسائل
-    Object.values(db.chatGroups).forEach(group => {
-        stats.messages += group.messages ? group.messages.length : 0;
-    });
-
-    // حساب المستخدمين النشطين (آخر 24 ساعة)
-    const now = Date.now();
-    Object.values(db.users).forEach(user => {
-        if (user.lastLogin) {
-            const lastLogin = new Date(user.lastLogin).getTime();
-            if (now - lastLogin < 24 * 60 * 60 * 1000) {
-                stats.activeUsers++;
-            }
-        }
-        stats.totalPoints += user.totalPoints || 0;
-    });
-
-    // حساب المهام المكتملة (من localStorage لا يمكن الوصول إليها من السيرفر)
-    // سيتم إرسالها من العميل
-
-    res.json({ success: true, stats });
-});
-
-// ---- الحصول على جميع المستخدمين ----
-app.get('/api/admin/users', (req, res) => {
-    const userId = req.query.userId;
-    if (!isAdmin(userId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    const users = Object.values(db.users).map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-    });
-
-    res.json({ success: true, users });
-});
-
-// ---- حظر مستخدم ----
-app.post('/api/admin/block-user', (req, res) => {
-    const { adminId, targetId } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    if (!db.users[targetId]) {
-        return res.status(404).json({ error: 'المستخدم غير موجود' });
-    }
-
-    db.users[targetId].blocked = true;
-    db.users[targetId].status = 'blocked';
-    saveDatabase(db);
-
-    res.json({ success: true, message: 'تم حظر المستخدم بنجاح' });
-});
-
-// ---- فك حظر مستخدم ----
-app.post('/api/admin/unblock-user', (req, res) => {
-    const { adminId, targetId } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    if (!db.users[targetId]) {
-        return res.status(404).json({ error: 'المستخدم غير موجود' });
-    }
-
-    db.users[targetId].blocked = false;
-    db.users[targetId].status = 'online';
-    saveDatabase(db);
-
-    res.json({ success: true, message: 'تم فك حظر المستخدم بنجاح' });
-});
-
-// ---- ترقية مستخدم إلى مشرف ----
-app.post('/api/admin/make-admin', (req, res) => {
-    const { adminId, targetId } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    if (!db.users[targetId]) {
-        return res.status(404).json({ error: 'المستخدم غير موجود' });
-    }
-
-    db.users[targetId].role = 'admin';
-    saveDatabase(db);
-
-    res.json({ success: true, message: 'تمت الترقية إلى مشرف بنجاح' });
-});
-
-// ---- حذف مستخدم ----
-app.post('/api/admin/delete-user', (req, res) => {
-    const { adminId, targetId } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    if (!db.users[targetId]) {
-        return res.status(404).json({ error: 'المستخدم غير موجود' });
-    }
-
-    delete db.users[targetId];
-    saveDatabase(db);
-
-    res.json({ success: true, message: 'تم حذف المستخدم بنجاح' });
-});
-
-// ---- إدارة المسابقات ----
-app.post('/api/admin/create-competition', (req, res) => {
-    const { adminId, gameId, name, prize, maxPlayers, startDate } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    const game = getGameById(gameId);
-    if (!game) {
-        return res.status(400).json({ error: 'لعبة غير موجودة' });
-    }
-
-    const competition = {
-        id: 'comp_' + Date.now(),
-        gameId: gameId,
-        gameName: game.name,
-        gameIcon: game.icon,
-        name: name,
-        prize: prize || '🏅 جائزة',
-        maxPlayers: maxPlayers || game.maxPlayers || 10,
-        participants: [],
-        startDate: startDate || new Date().toISOString(),
-        endDate: null,
-        status: 'upcoming',
-        winner: null,
-        createdBy: adminId,
-        createdAt: new Date().toISOString()
-    };
-
-    db.competitions.push(competition);
-    saveDatabase(db);
-
-    res.status(201).json({ success: true, competition });
-});
-
-app.post('/api/admin/delete-competition', (req, res) => {
-    const { adminId, competitionId } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    const index = db.competitions.findIndex(c => c.id === competitionId);
-    if (index === -1) {
-        return res.status(404).json({ error: 'المسابقة غير موجودة' });
-    }
-
-    db.competitions.splice(index, 1);
-    saveDatabase(db);
-
-    res.json({ success: true, message: 'تم حذف المسابقة بنجاح' });
-});
-
-// ---- إضافة نقاط للمستخدم ----
-app.post('/api/admin/add-points', (req, res) => {
-    const { adminId, targetId, points } = req.body;
-    if (!isAdmin(adminId)) {
-        return res.status(403).json({ error: 'غير مصرح لك' });
-    }
-
-    if (!db.users[targetId]) {
-        return res.status(404).json({ error: 'المستخدم غير موجود' });
-    }
-
-    db.users[targetId].totalPoints = (db.users[targetId].totalPoints || 0) + points;
-    saveDatabase(db);
-
-    res.json({ 
-        success: true, 
-        message: `تم إضافة ${points} نقطة للمستخدم`,
-        newTotal: db.users[targetId].totalPoints 
-    });
 });
