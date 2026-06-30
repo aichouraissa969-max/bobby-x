@@ -1,7 +1,7 @@
 {
   "name": "bobby-x-server",
-  "version": "2.0.0",
-  "description": "🎮 BOBBY X - منصة الألعاب والدردشة مع لوحة تحكم المشرف",
+  "version": "3.0.0",
+  "description": "🎮 BOBBY X - منصة الألعاب والدردشة مع 13 لعبة ولوحة تحكم المشرف",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -18,7 +18,11 @@
   "devDependencies": {
     "nodemon": "^2.0.22"
   },
-  "keywords": ["games", "chat", "bobby-x", "platform", "admin"],
+  "keywords": ["games", "chat", "bobby-x", "platform", "admin", "13-games", "pwa"],
   "author": "BOBBY X",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }
+ 
